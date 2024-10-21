@@ -1,18 +1,12 @@
-import gzip
 import csv
 import torch
 from rdkit import Chem
 from torch_geometric.data import Data
 
-def unzip_and_parse(file_path):
-    with gzip.open(file_path, 'rt') as f:
+def read_csv(file_path):
+    with open(file_path, 'r') as f:
         reader = csv.DictReader(f)
         data = [row for row in reader]
-    return data
-
-def parse_csv(file_content):
-    reader = csv.DictReader(file_content.splitlines())
-    data = [row for row in reader]
     return data
 
 def smiles_to_graph(smiles, property_value):
@@ -34,20 +28,18 @@ def smiles_to_graph(smiles, property_value):
     
     return Data(x=x, edge_index=edge_index, y=torch.tensor([property_value], dtype=torch.float))
 
-def process_and_output(input_file, output_file, property_name):
-    #data = unzip_and_parse(input_file)
-    data = parse_csv(input_file)
+def process_and_output(input_file, output_file):
+    data = read_csv(input_file)
     with open(output_file, 'w', newline='') as f:
         writer = csv.writer(f)
-        writer.writerow(['smiles', 'property', 'graph'])
+        writer.writerow(['smiles', 'solubility', 'graph'])
         for row in data:
             smiles = row['smiles']
-            property_value = float(row[property_name])
-            graph = smiles_to_graph(smiles, property_value)
-            writer.writerow([smiles, property_value, graph])
+            solubility = float(row['measured log solubility in mols per litre'])
+            graph = smiles_to_graph(smiles, solubility)
+            writer.writerow([smiles, solubility, graph])
 
 if __name__ == "__main__":
     input_file = 'data/delaney-processed.csv'
-    output_file = 'data/delaney-processed-gnn.csv'
-    property_name = 'measured log solubility in mols per litre'  # Replace with actual property name
-    process_and_output(input_file, output_file, property_name)
+    output_file = 'data/gnn_input_data.csv'
+    process_and_output(input_file, output_file)
