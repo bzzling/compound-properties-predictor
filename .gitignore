@@ -1,1 +1,6 @@
 universalgestures.sh
+data/processed_data.csv
+data/pubchem_data.csv
+data/pubchem_data.gz
+data/TrainSet.txt
+data/TestSet.txt
